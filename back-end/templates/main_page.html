@@ -4,9 +4,85 @@
     <title>Main Page</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        // Function to toggle visibility of the Create Account form
+        function toggleCreatePostForm() {
+            const form = document.getElementById("create-post-form");
+            form.style.display = form.style.display === "none" ? "block" : "none";
+        }
+    </script>
+    <style>
+        #create-post-form {
+            display: none; /* Initially hidden */
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Hello!</h1>
+    <div>
+        <a href="/account_settings">Your Account</a>
+    </div>
+
+    <div>
+        <h1>Popular Topics</h1>
+        <ul>
+            {% for topic in all_topics %}
+                <li>
+                    <a href="/go_to_topic">{{ topic.name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div>
+        <!-- Button to show the post creation stuff -->
+        <button type="button" onclick="toggleCreatePostForm()" style="margin-top: 20px;">Create Post</button>
+
+        <!-- Create post form -->
+        <form id="create-post-form" action="/create_post" method="POST">
+            <input name="post_topic" type="text" placeholder="Topic" required>
+            <!-- Textarea for post content -->
+            <div>
+                <textarea name="post_title"
+                          placeholder="Subject"
+                          maxlength="50"
+                          rows="2"
+                          style="width: 20%; resize: none"
+                          required
+                ></textarea>
+            </div>
+            <div>
+                <textarea
+                    name="post_content"
+                    placeholder="What's on your mind?"
+                    maxlength="500"
+                    rows="5"
+                    style="width: 30%; resize: none;"
+                    required
+                ></textarea>
+            </div>
+
+            <button type="submit">Post</button>
+        </form>
+    </div>
+
+    <!-- this is going to be for the user's feed -->
+    <div>
+        <h2>{{ username }}'s Feed</h2>
+        <div>
+            {% for post in posts %}
+                <div class="post">
+                    <h3>{{ post.poster_username }}: {{ post.title }}</h3>
+                    <p>{{ post.content }}</p>
+                    <small>Posted on: {{ post.created_at }}</small>
+                </div>
+            {% else %}
+                <p>No posts available.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+
     <!-- Display any flash messages -->
     {% with messages = get_flashed_messages() %}
         {% if messages %}
