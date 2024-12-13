@@ -177,8 +177,10 @@ def main_page():
         all_topics = Topic.query.all()
 
         # Get the posts for the topics the user is following
-        relevant_posts = Posts.query.filter(Posts.topic_id.in_([topic.id for topic in followed_topics])).all()
-
+        # relevant_posts = Posts.query.filter(Posts.topic_id.in_([topic.id for topic in followed_topics])).all()
+        relevant_posts = Posts.query.filter(
+            Posts.topic_id.in_([topic.id for topic in followed_topics])
+        ).order_by(Posts.created_at.desc()).all()
         # Get a list of topic IDs that the user is following
         followed_topic_ids = [topic.id for topic in followed_topics]
 
@@ -382,6 +384,7 @@ def search_posts():
     # Perform the search: find posts by topic name or user username
     posts_by_topic = Posts.query.join(Topic).filter(Topic.name.ilike(f"%{query}%")).all()
     posts_by_user = Posts.query.join(User).filter(User.username.ilike(f"%{query}%")).all()
+    posts_by_title = Posts.query.filter(Posts.title.ilike(f"%{query}%")).all()
 
     #   Get the user object from the database
     user = User.query.get(user_id)
@@ -391,13 +394,15 @@ def search_posts():
     all_topics = Topic.query.all()
 
     # Get the posts for the topics the user is following
-    relevant_posts = Posts.query.filter(Posts.topic_id.in_([topic.id for topic in followed_topics])).all()
+    relevant_posts = Posts.query.filter(
+        Posts.topic_id.in_([topic.id for topic in followed_topics])
+    ).order_by(Posts.created_at.desc()).all()
 
     # Get a list of topic IDs that the user is following
     followed_topic_ids = [topic.id for topic in followed_topics]
 
     # Combine results and remove duplicates
-    search_results = list({post.id: post for post in posts_by_topic + posts_by_user}.values())
+    search_results = list({post.id: post for post in posts_by_topic + posts_by_user + posts_by_title}.values())
 
     # Render the main page with the new search results
     return render_template('main_page.html', search_results=search_results, query=query, all_topics=all_topics,
@@ -412,3 +417,4 @@ if __name__ == '__main__':
         db.create_all()
 
     app.run(debug=True)
+
