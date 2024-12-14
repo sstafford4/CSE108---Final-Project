@@ -513,8 +513,6 @@ def dislike_post(post_id):
         flash("You need to log in to dislike posts.")
         return redirect(url_for('login'))
 
-
-
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

@@ -32,6 +32,10 @@ form input {
     font-size: 14px;
 }
 
+form h1 {
+    text-align: center;
+}
+
 /* Form Buttons */
 form button {
     width: 100%;
