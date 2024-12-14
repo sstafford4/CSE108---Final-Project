@@ -26,16 +26,6 @@
         <a href="/account_settings">Your Account</a>
     </div>
 
-<!--    <div>-->
-<!--        <h1>Popular Topics</h1>-->
-<!--        <ul>-->
-<!--            {% for topic in all_topics %}-->
-<!--                <li>-->
-<!--                    <a href="/go_to_topic">{{ topic.name }} <a href="{{ url_for('follow_topic', topic_id=topic.id) }}">+</a></a>-->
-<!--                </li>-->
-<!--            {% endfor %}-->
-<!--        </ul>-->
-<!--    </div>-->
     <div>
         <form action="{{ url_for('search_posts') }}" method="GET">
             <input type="text" name="query" placeholder="posts, users, topics" required>
@@ -50,7 +40,9 @@
                 <ul>
                     {% for post in search_results %}
                         <li>
-                            <strong>{{ post.title }}</strong> by {{ post.poster_username }} (Topic: {{ post.topic.name }})
+                            <strong>{{ post.title }}</strong> by {{ post.poster_username }} (Topic: {{ post.topic.name }}) <a href="{{ url_for('view_post', post_id=post.id) }}">
+                    <button>View Post</button>
+                </a>
                         </li>
                     {% endfor %}
                 </ul>
@@ -108,42 +100,37 @@
         </form>
     </div>
 
-<!--    <div>-->
-<!--        <form action="{{ url_for('search_posts') }}" method="GET">-->
-<!--            <input type="text" name="query" placeholder="Search posts by topic or user" required>-->
-<!--            <button type="submit">Search</button>-->
-<!--        </form>-->
-<!--    </div>-->
-
-<!--    {% if search_results %}-->
-<!--        <h2>Search Results:</h2>-->
-<!--        <ul>-->
-<!--            {% for post in search_results %}-->
-<!--                <li>-->
-<!--                    <strong>{{ post.title }}</strong> by {{ post.poster_username }} (Topic: {{ post.topic.name }})-->
-<!--                </li>-->
-<!--            {% endfor %}-->
-<!--        </ul>-->
-<!--    {% elif search_results is not none %}-->
-<!--        <p>No results found.</p>-->
-<!--    {% endif %}-->
-    <!-- this is going to be for the user's feed -->
     <div>
         <h2>{{ username }}'s Feed</h2>
         <div>
             <h4>Posts from topics you follow</h4>
+            {% if posts %}
             {% for post in posts %}
-                <div class="post">
-                    <h3>{{ post.poster_username }}: {{ post.title }}</h3>
-                    <p>{{ post.content }}</p>
-                    <small>Posted on: {{ post.created_at }}</small>
-                </div>
-            {% else %}
-                <p>No posts available.</p>
+            <div class="post">
+                <h3>{{ post.poster_username }}: {{ post.title }}</h3>
+                <p>{{ post.content }}</p>
+                <small>Posted on: {{ post.created_at }}</small>
+
+                <!-- View Post Button -->
+                <a href="{{ url_for('view_post', post_id=post.id) }}">
+                    <button>View Post</button>
+                </a>
+
+            </div>
             {% endfor %}
+            {% else %}
+            <p>No posts available.</p>
+            {% endif %}
         </div>
     </div>
 
+    <!-- JavaScript to Toggle Comment Box -->
+    <script>
+        function toggleCommentBox(postId) {
+            const commentBox = document.getElementById(`comment-box-${postId}`);
+            commentBox.style.display = (commentBox.style.display === "none") ? "block" : "none";
+        }
+    </script>
 
     <!-- Display any flash messages -->
     {% with messages = get_flashed_messages() %}

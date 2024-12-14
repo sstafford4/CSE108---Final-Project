@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Post Details</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script>
+            // Function to toggle visibility of the comment form
+            function toggleCommentBox(postId) {
+                const commentBox = document.getElementById(`comment-box-${postId}`);
+                if (commentBox.style.display === "none") {
+                    commentBox.style.display = "block";
+                } else {
+                    commentBox.style.display = "none";
+                }
+            }
+        </script>
+    </head>
+
+    <body>
+
+        <a href="/main_page">Return to Main Page</a>
+
+        <!-- Display the post information -->
+        <div>
+            <h1>{{ post_info.title }}</h1>
+            <h3>By: {{ post_info.poster_username }}</h3>
+            <p>{{ post_info.content }}</p>
+            <small>Posted on: {{ post_info.created_at }}</small>
+        </div>
+
+        <hr>
+
+        <!-- Leave Comment Button -->
+        <button class="leave-comment-btn" onclick="toggleCommentBox({{ post_info.id }})">Leave Comment</button>
+
+        <!-- Comment Box -->
+        <div id="comment-box-{{ post_info.id }}" class="comment-box" style="display: none;">
+            <form action="{{ url_for('submit_comment', post_id=post_info.id) }}" method="POST">
+                <!-- Hidden field for post ID -->
+                <input type="hidden" name="post_id" value="{{ post_info.id }}">
+
+                <!-- Textarea for the comment -->
+                <textarea name="content" id="comment-text-{{ post_info.id }}" placeholder="Write your comment here..." required></textarea>
+
+                <!-- Submit button -->
+                <button type="submit">Submit Comment</button>
+            </form>
+        </div>
+
+        <!-- Display the comments section -->
+        <div>
+            <h2>Comments:</h2>
+
+            {% if comment_info %}
+                <ul>
+                    {% for comment in comment_info %}
+                        <li>
+                            <p>{{ comment.content }}</p>
+                            <small>Posted on: {{ comment.created_at }}</small>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No comments yet.</p>
+            {% endif %}
+        </div>
+
+    </body>
+</html>

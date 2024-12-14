@@ -1,4 +1,4 @@
-from flask import render_template, request, url_for, redirect, flash, session, Flask
+from flask import render_template, request, url_for, redirect, flash, session, Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 # from config import app, db
 # from models import User, Topic, Posts
@@ -111,6 +111,32 @@ class Posts(db.Model):
             'updated_at': self.updated_at.isoformat()
         }
 
+class Comments(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+    # Relationships
+    user = db.relationship('User', backref=db.backref('comments', lazy='dynamic'))
+    post = db.relationship('Posts', backref=db.backref('comments', lazy='dynamic'))
+
+    def __init__(self, post_id, user_id, content):
+        self.post_id = post_id
+        self.user_id = user_id
+        self.content = content
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'post_id': self.post_id,
+            'user_id': self.user_id,
+            'content': self.content,
+            'created_at': self.created_at.isoformat()
+        }
+
+
 app.secret_key = 'your_secret_key_here'  # Change this to a secure random key
 
 
@@ -127,41 +153,6 @@ def logout():
     # Redirect to the login page
     return redirect(url_for('login'))  # Assuming 'login' is the name of the login route
 
-# @app.route('/main_page')
-# def main_page():
-#     # Ensure the user is logged in, and retrieve the username from session
-#     if 'logged_in' in session:
-#         user_id = session['user_id']
-#         username = session.get('username')  # Retrieve the username from session
-#
-#         all_topics = Topic.query.all()
-#         relevant_posts = Posts.query.all()
-#
-#         return render_template('main_page.html', all_topics=all_topics, posts=relevant_posts, username=username)
-#     else:
-#         flash("You need to log in first.")
-#         return redirect(url_for('login'))
-# @app.route('/main_page')
-# def main_page():
-#     # Ensure the user is logged in, and retrieve the username from session
-#     if 'logged_in' in session:
-#         user_id = session['user_id']
-#         username = session.get('username')  # Retrieve the username from session
-#
-#         # Get the user object from the database
-#         user = User.query.get(user_id)
-#
-#         # Get the topics the user is following
-#         followed_topics = user.followed_topics
-#         all_topics = Topic.query.all()
-#
-#         # Get the posts for the topics the user is following
-#         relevant_posts = Posts.query.filter(Posts.topic_id.in_([topic.id for topic in followed_topics])).all()
-#
-#         return render_template('main_page.html', all_topics=all_topics, followed_topics=followed_topics, posts=relevant_posts, username=username)
-#     else:
-#         flash("You need to log in first.")
-#         return redirect(url_for('login'))
 @app.route('/main_page')
 def main_page():
     # Ensure the user is logged in, and retrieve the username from session
@@ -336,41 +327,6 @@ def unfollow_topic(topic_id):
         flash("You need to log in first.")
         return redirect(url_for('login'))
 
-# @app.route('/search_posts', methods=['GET'])
-# def search_posts():
-#     user_id = session['user_id']
-#     username = session['username']
-#     query = request.args.get('query', '').strip()  # Get the search query from the URL parameters
-#
-#     if not query:
-#         flash("Please enter a search query.")
-#         return redirect(url_for('main_page'))
-#
-#     # Perform the search: find posts by topic name or user username
-#     posts_by_topic = Posts.query.join(Topic).filter(Topic.name.ilike(f"%{query}%")).all()
-#     posts_by_user = Posts.query.join(User).filter(User.username.ilike(f"%{query}%")).all()
-#
-#     # Combine results and remove duplicates
-#     search_results = list({post.id: post for post in posts_by_topic + posts_by_user}.values())
-#
-#     # Get the user object from the database
-#     user = User.query.get(user_id)
-#
-#     # Get the topics the user is following
-#     followed_topics = user.followed_topics
-#     all_topics = Topic.query.all()
-#
-#     # Get the posts for the topics the user is following
-#     relevant_posts = Posts.query.filter(Posts.topic_id.in_([topic.id for topic in followed_topics])).all()
-#
-#     # Get a list of topic IDs that the user is following
-#     followed_topic_ids = [topic.id for topic in followed_topics]
-#
-#     return render_template('main_page.html', search_results=search_results, query=query,all_topics=all_topics,
-#                                followed_topic_ids=followed_topic_ids,
-#                                posts=relevant_posts,
-#                                username=username)
-
 @app.route('/search_posts', methods=['GET'])
 def search_posts():
     user_id = session.get('user_id')
@@ -410,6 +366,80 @@ def search_posts():
                                    posts=relevant_posts,
                                    username=username)
 
+
+@app.route('/submit_comment', methods=['POST'])
+def submit_comment():
+    user_id = session.get('user_id')
+    username = session.get('username')
+
+    # Get data from form
+    post_id = request.form.get('post_id')
+    content = request.form.get('content')
+
+    # Ensure user is logged in
+    if not user_id:
+        flash("You must be logged in to submit a comment.")
+        return redirect(url_for('login'))
+
+    user = User.query.get(user_id)
+
+    # Validate required fields
+    if not post_id or not content.strip():
+        flash("Comment content cannot be empty.")
+        return redirect(url_for('view_post', post_id=post_id))
+
+    # Create a new comment instance
+    comment = Comments(post_id=post_id, user_id=user_id, content=content)
+    try:
+        db.session.add(comment)
+        db.session.commit()
+        flash("Comment submitted successfully!")
+
+        # Redirect back to the post page to reload with the new comment
+        return redirect(url_for('view_post', post_id=post_id))
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"An error occurred: {str(e)}")
+        return redirect(url_for('view_post', post_id=post_id))
+
+
+@app.route('/view_post/<int:post_id>', methods=['GET', 'POST'])
+def view_post(post_id):
+    user_id = session.get('user_id')
+    username = session.get('username')
+
+    # Get the post by ID (single post)
+    post = Posts.query.get(post_id)
+
+    if post is None:
+        # Handle the case where the post does not exist
+        return "Post not found", 404
+
+    # Prepare post_info as a dictionary for the template
+    post_info = {
+        "id": post.id,
+        "poster_id": post.poster_id,
+        "poster_username": post.poster_username,
+        "title": post.title,
+        "content": post.content,
+        "created_at": post.created_at
+    }
+
+    # Get all comments associated with the post
+    comments = Comments.query.filter_by(post_id=post_id).order_by(Comments.created_at.desc()).all()
+
+    # Prepare comment_info for rendering
+    comment_info = [
+        {
+            "content": comment.content,
+            "created_at": comment.created_at
+        }
+        for comment in comments
+    ]
+
+    # Render the template with post and comment information
+    return render_template('view_post.html', post_info=post_info, comment_info=comment_info)
 
 
 if __name__ == '__main__':
