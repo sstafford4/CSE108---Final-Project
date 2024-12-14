@@ -11,12 +11,7 @@
             form.style.display = form.style.display === "none" ? "block" : "none";
         }
     </script>
-    <style>
-        #create-account-form {
-            display: none; /* Initially hidden */
-            margin-top: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
 </head>
 <body>
     <!-- Login Form -->

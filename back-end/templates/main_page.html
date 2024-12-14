@@ -11,29 +11,22 @@
             form.style.display = form.style.display === "none" ? "block" : "none";
         }
     </script>
-    <style>
-        #create-post-form {
-            display: none; /* Initially hidden */
-            margin-top: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main_page.css') }}">
 </head>
 <body>
-    <div>
+    <div id="top-navigation">
         <a href="/logout">Log Out</a>
-    </div>
-    <div>
         <a href="/account_settings">Your Account</a>
     </div>
 
-    <div>
+    <div id="search-bar">
         <form action="{{ url_for('search_posts') }}" method="GET">
-            <input type="text" name="query" placeholder="posts, users, topics" required>
+            <input type="text" name="query" placeholder="search keywords, users, topics" required>
             <button type="submit">Search</button>
         </form>
     </div>
 
-    <div>
+    <div id="search-results">
         {% if search_results is not none %}
             {% if search_results %}
                 <h2>Search Results:</h2>
@@ -51,34 +44,34 @@
             {% endif %}
         {% endif %}
     </div>
-    <div>
+    <div id="popular-topics">
         <h1>Popular Topics</h1>
         <ul>
             {% for topic in all_topics %}
                 <li>
-                    <a href="/go_to_topic">{{ topic.name }}
+                    {{ topic.name }}
                         {% if topic.id in followed_topic_ids %}
                             <a href="{{ url_for('unfollow_topic', topic_id=topic.id) }}">-</a>
                         {% else %}
                             <a href="{{ url_for('follow_topic', topic_id=topic.id) }}">+</a>
                         {% endif %}
-                    </a>
                 </li>
             {% endfor %}
         </ul>
     </div>
 
     <div>
+        <div style="text-align: center; margin-top: 80px;">
         <!-- Button to show the post creation stuff -->
-        <button type="button" onclick="toggleCreatePostForm()" style="margin-top: 20px;">Create Post</button>
-
+            <button type="button" onclick="toggleCreatePostForm()">Create Post</button>
+        </div>
         <!-- Create post form -->
         <form id="create-post-form" action="/create_post" method="POST">
             <input name="post_topic" type="text" placeholder="Topic" required>
             <!-- Textarea for post content -->
             <div>
                 <textarea name="post_title"
-                          placeholder="Subject"
+                          placeholder="Title"
                           maxlength="50"
                           rows="2"
                           style="width: 20%; resize: none"
@@ -100,7 +93,7 @@
         </form>
     </div>
 
-    <div>
+    <div id="user-feed">
         <h2>{{ username }}'s Feed</h2>
         <div>
             <h4>Posts from topics you follow</h4>

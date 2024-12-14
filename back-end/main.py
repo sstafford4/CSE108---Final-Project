@@ -92,6 +92,12 @@ class Posts(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
+    def like_count(self):
+        return self.post_likes.filter_by(is_like=True).count()
+
+    def dislike_count(self):
+        return self.post_likes.filter_by(is_like=False).count()
+
     def __init__(self, poster_id, poster_username, topic_id, title, content):
         self.poster_id = poster_id
         self.poster_username = poster_username
@@ -108,13 +114,16 @@ class Posts(db.Model):
             'title': self.title,
             'content': self.content,
             'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat()
+            'updated_at': self.updated_at.isoformat(),
+            'like_count': self.like_count(),
+            'dislike_count': self.dislike_count()
         }
 
 class Comments(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    comment_username = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now)
 
@@ -122,9 +131,10 @@ class Comments(db.Model):
     user = db.relationship('User', backref=db.backref('comments', lazy='dynamic'))
     post = db.relationship('Posts', backref=db.backref('comments', lazy='dynamic'))
 
-    def __init__(self, post_id, user_id, content):
+    def __init__(self, post_id, user_id, comment_username,content):
         self.post_id = post_id
         self.user_id = user_id
+        self.comment_username = comment_username
         self.content = content
 
     def to_json(self):
@@ -132,7 +142,34 @@ class Comments(db.Model):
             'id': self.id,
             'post_id': self.post_id,
             'user_id': self.user_id,
+            'comment_username': self.comment_username,
             'content': self.content,
+            'created_at': self.created_at.isoformat()
+        }
+
+class PostLikes(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
+    is_like = db.Column(db.Boolean, nullable=False)  # True for like, False for dislike
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+    # Relationships
+    user = db.relationship('User', backref=db.backref('post_likes', lazy='dynamic'))
+    post = db.relationship('Posts', backref=db.backref('post_likes', lazy='dynamic'))
+
+
+    def __init__(self, user_id, post_id, is_like):
+        self.user_id = user_id
+        self.post_id = post_id
+        self.is_like = is_like
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'post_id': self.post_id,
+            'is_like': self.is_like,
             'created_at': self.created_at.isoformat()
         }
 
@@ -389,11 +426,11 @@ def submit_comment():
         return redirect(url_for('view_post', post_id=post_id))
 
     # Create a new comment instance
-    comment = Comments(post_id=post_id, user_id=user_id, content=content)
+    comment = Comments(post_id=post_id, user_id=user_id, comment_username=user.username, content=content)
     try:
         db.session.add(comment)
         db.session.commit()
-        flash("Comment submitted successfully!")
+        #flash("Comment submitted successfully!")
 
         # Redirect back to the post page to reload with the new comment
         return redirect(url_for('view_post', post_id=post_id))
@@ -404,42 +441,78 @@ def submit_comment():
         return redirect(url_for('view_post', post_id=post_id))
 
 
-@app.route('/view_post/<int:post_id>', methods=['GET', 'POST'])
+@app.route('/view_post/<int:post_id>', methods=['GET'])
 def view_post(post_id):
     user_id = session.get('user_id')
     username = session.get('username')
 
-    # Get the post by ID (single post)
     post = Posts.query.get(post_id)
-
     if post is None:
-        # Handle the case where the post does not exist
         return "Post not found", 404
 
-    # Prepare post_info as a dictionary for the template
-    post_info = {
-        "id": post.id,
-        "poster_id": post.poster_id,
-        "poster_username": post.poster_username,
-        "title": post.title,
-        "content": post.content,
-        "created_at": post.created_at
-    }
-
-    # Get all comments associated with the post
     comments = Comments.query.filter_by(post_id=post_id).order_by(Comments.created_at.desc()).all()
+    like_count = PostLikes.query.filter_by(post_id=post_id, is_like=True).count()
+    dislike_count = PostLikes.query.filter_by(post_id=post_id, is_like=False).count()
 
-    # Prepare comment_info for rendering
-    comment_info = [
-        {
-            "content": comment.content,
-            "created_at": comment.created_at
-        }
-        for comment in comments
-    ]
+    user_like_status = None
+    if user_id:
+        like_entry = PostLikes.query.filter_by(user_id=user_id, post_id=post_id).first()
+        if like_entry:
+            user_like_status = "like" if like_entry.is_like else "dislike"
 
-    # Render the template with post and comment information
-    return render_template('view_post.html', post_info=post_info, comment_info=comment_info)
+    return render_template('view_post.html',
+                           post_info=post,
+                           comment_info=comments,
+                           like_count=like_count,
+                           dislike_count=dislike_count,
+                           user_like_status=user_like_status)
+
+@app.route('/like_post/<int:post_id>', methods=['GET','POST'])
+def like_post(post_id):
+    if 'logged_in' in session:
+        user_id = session['user_id']
+        like_entry = PostLikes.query.filter_by(user_id=user_id, post_id=post_id).first()
+
+        # Check if the user already liked or disliked the post
+        if like_entry:
+            if like_entry.is_like:
+                db.session.delete(like_entry)  # Remove like if already liked
+            else:
+                like_entry.is_like = True  # Switch from dislike to like
+        else:
+            # Add a new like
+            like_entry = PostLikes(user_id=user_id, post_id=post_id, is_like=True)
+            db.session.add(like_entry)
+
+        db.session.commit()
+        return redirect(url_for('view_post', post_id=post_id))
+    else:
+        flash("You need to log in to like posts.")
+        return redirect(url_for('login'))
+
+@app.route('/dislike_post/<int:post_id>', methods=['GET', 'POST'])
+def dislike_post(post_id):
+    if 'logged_in' in session:
+        user_id = session['user_id']
+        like_entry = PostLikes.query.filter_by(user_id=user_id, post_id=post_id).first()
+
+        # Check if the user already liked or disliked the post
+        if like_entry:
+            if not like_entry.is_like:
+                db.session.delete(like_entry)  # Remove dislike if already disliked
+            else:
+                like_entry.is_like = False  # Switch from like to dislike
+        else:
+            # Add a new dislike
+            like_entry = PostLikes(user_id=user_id, post_id=post_id, is_like=False)
+            db.session.add(like_entry)
+
+        db.session.commit()
+        return redirect(url_for('view_post', post_id=post_id))
+    else:
+        flash("You need to log in to dislike posts.")
+        return redirect(url_for('login'))
+
 
 
 if __name__ == '__main__':

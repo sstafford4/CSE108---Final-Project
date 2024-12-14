@@ -15,6 +15,7 @@
                 }
             }
         </script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='view_post.css') }}">
     </head>
 
     <body>
@@ -27,6 +28,17 @@
             <h3>By: {{ post_info.poster_username }}</h3>
             <p>{{ post_info.content }}</p>
             <small>Posted on: {{ post_info.created_at }}</small>
+        </div>
+
+        <hr>
+
+        <!-- Like/Dislike Buttons -->
+        <div>
+            <a href="{{ url_for('like_post', post_id=post_info.id) }}">Likes</a>
+            <span>{{ like_count }}</span>
+
+            <a href="{{ url_for('dislike_post', post_id=post_info.id) }}">Dislikes</a>
+            <span>{{ dislike_count }}</span>
         </div>
 
         <hr>
@@ -56,7 +68,7 @@
                 <ul>
                     {% for comment in comment_info %}
                         <li>
-                            <p>{{ comment.content }}</p>
+                            <p>{{ comment.comment_username }}: {{ comment.content }}</p>
                             <small>Posted on: {{ comment.created_at }}</small>
                         </li>
                     {% endfor %}
