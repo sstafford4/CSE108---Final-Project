@@ -16,7 +16,7 @@
 <body>
     <div id="top-navigation">
         <a href="/logout">Log Out</a>
-        <a href="/account_settings">Your Account</a>
+        <a href="{{ url_for('account_settings') }}">Your Account</a>
     </div>
 
     <div id="search-bar">
@@ -46,6 +46,10 @@
     </div>
     <div id="popular-topics">
         <h1>Popular Topics</h1>
+            <div>
+            <a href="{{ url_for('add_topic') }}">Add New Topic</a>
+            </div>
+
         <ul>
             {% for topic in all_topics %}
                 <li>
@@ -125,14 +129,5 @@
         }
     </script>
 
-    <!-- Display any flash messages -->
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <script>
-                // Show the first flash message in a popup (the most recent one)
-                alert("{{ messages[0] }}");
-            </script>
-        {% endif %}
-    {% endwith %}
 </body>
 </html>

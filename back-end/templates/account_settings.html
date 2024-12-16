@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Account</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='account_settings.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, {{ user.real_name }}!</h1>
+
+        <div class="section">
+            <h2>Topics You Are Following</h2>
+            <ul>
+                {% if followed_topics %}
+                    {% for topic in followed_topics %}
+                        <li>{{ topic.name }}</li>
+                    {% endfor %}
+                {% else %}
+                    <li>You are not following any topics yet.</li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Your Posts</h2>
+            {% if user_posts %}
+                <ul>
+                    {% for post in user_posts %}
+                        <li>
+                            <strong>{{ post.title }}</strong> - <em>{{ post.created_at }}</em>
+                            <br>
+                            <a href="{{ url_for('view_post', post_id=post.id) }}">View Post</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>You have not made any posts yet.</p>
+            {% endif %}
+        </div>
+        <!-- Button to go back to the home page -->
+        <div class="back-to-home">
+            <a href="{{ url_for('main_page') }}">
+                <button type="button">Back to Home</button>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+    </div>
+</body>
+</html>

@@ -13,7 +13,7 @@ app = Flask(__name__)
 #     hostname="sstafford4.mysql.pythonanywhere-services.com",
 #     databasename="sstafford4$default",
 # )
-SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:12263899@localhost/final_project'
+SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:1234@localhost/final_project'
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -209,6 +209,7 @@ def main_page():
         relevant_posts = Posts.query.filter(
             Posts.topic_id.in_([topic.id for topic in followed_topics])
         ).order_by(Posts.created_at.desc()).all()
+
         # Get a list of topic IDs that the user is following
         followed_topic_ids = [topic.id for topic in followed_topics]
 
@@ -305,6 +306,51 @@ def create_post():
 
     # If it's a GET request, return the form to create a post
     return render_template('main_page.html')
+
+# route for the user settings
+@app.route('/account_settings')
+def account_settings():
+    if 'logged_in' in session:
+        user_id = session['user_id']
+        user = User.query.get(user_id)
+
+        # Get topics the user is following
+        followed_topics = user.followed_topics
+
+        # Get posts made by the user
+        user_posts = Posts.query.filter_by(poster_id=user_id).all()
+
+        return render_template('account_settings.html', user=user, followed_topics=followed_topics, user_posts=user_posts)
+    else:
+        flash("You need to log in first.")
+        return redirect(url_for('login'))
+
+#add a topic
+@app.route('/add_topic', methods=['GET', 'POST'])
+def add_topic():
+    if 'logged_in' not in session:
+        flash("You need to log in first.")
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        # Get the topic name from the form
+        topic_name = request.form.get('topic_name')
+        topic_description = request.form.get('topic_description')
+
+        # Check if the topic already exists
+        existing_topic = Topic.query.filter_by(name=topic_name).first()
+        if existing_topic:
+            flash("This topic already exists.")
+            return redirect(url_for('add_topic'))
+
+        # Create a new topic and add it to the database
+        new_topic = Topic(name=topic_name, description=topic_description)
+        db.session.add(new_topic)
+        db.session.commit()
+        flash(f"New topic '{topic_name}' added successfully!")
+        return redirect(url_for('main_page'))  # Redirect back to main page or wherever you want
+
+    return render_template('add_topic.html')  # A new template for adding topics
 
 @app.route('/follow_topic/<int:topic_id>', methods=['GET'])
 def follow_topic(topic_id):

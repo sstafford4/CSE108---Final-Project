@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Topic</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='add_topic.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Add a New Topic</h1>
+
+        <form action="{{ url_for('add_topic') }}" method="POST">
+            <label for="topic_name">Topic Name:</label>
+            <input type="text" name="topic_name" required>
+
+            <label for="topic_description">Description:</label>
+            <textarea name="topic_description" rows="4" required></textarea>
+
+            <button type="submit">Add Topic</button>
+        </form>
+         <!-- Button to go back to the home page -->
+        <div class="back-to-home">
+            <a href="{{ url_for('main_page') }}">
+                <button type="button">Back to Home</button>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+
