@@ -9,7 +9,7 @@ SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostnam
     hostname="sstafford4.mysql.pythonanywhere-services.com",
     databasename="sstafford4$default",
 )
-app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:IbraPost@localhost/final_project'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)

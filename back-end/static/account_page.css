@@ -1,0 +1,84 @@
+/* General reset and styling */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: #007BFF;
+}
+
+a:hover {
+    color: #0056b3;
+}
+
+/* Top navigation (logout and account settings) */
+#top-navigation {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 20px;
+}
+
+#top-navigation a {
+    font-weight: bold;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+#top-navigation a:hover {
+    background-color: #f1f1f1;
+}
+
+#account-details {
+    text-align: center;
+    margin-top: 20px;
+}
+
+#bio-details {
+    text-align: center;
+    margin-top: 20px;
+}
+
+#user-posts {
+    margin: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#user-posts ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#user-posts li {
+    margin: 10px 0;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+
+}
+
+#user-posts li:last-child {
+    border-bottom: none;
+}
+
+button {
+    padding: 5px 10px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}

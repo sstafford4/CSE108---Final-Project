@@ -13,7 +13,7 @@ app = Flask(__name__)
 #     hostname="sstafford4.mysql.pythonanywhere-services.com",
 #     databasename="sstafford4$default",
 # )
-SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:12263899@localhost/final_project'
+SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:IbraPost@localhost/final_project'
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -170,6 +170,27 @@ class PostLikes(db.Model):
             'user_id': self.user_id,
             'post_id': self.post_id,
             'is_like': self.is_like,
+            'created_at': self.created_at.isoformat()
+        }
+
+class Bio(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    bio = db.Column(db.Text, nullable=True, default="")  # Bio content
+    created_at = db.Column(db.DateTime, default=datetime.now)  # Timestamp for when bio was added/updated
+
+    # Relationship to the User model
+    user = db.relationship('User', backref=db.backref('bio', lazy='dynamic'))
+
+    def __init__(self, user_id, bio=None):
+        self.user_id = user_id
+        self.bio = bio
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'bio': self.bio,
             'created_at': self.created_at.isoformat()
         }
 
@@ -512,6 +533,42 @@ def dislike_post(post_id):
     else:
         flash("You need to log in to dislike posts.")
         return redirect(url_for('login'))
+
+#Starting in this part
+@app.route('/account_profile', methods=['GET', 'POST']) #I changed route /account_setting into /account_profile needs to be change on main_page.html
+def account_settings():
+    user_id = session.get('user_id')
+    username = session.get('username')
+
+    user_posts = Posts.query.filter_by(poster_id=user_id).order_by(Posts.created_at.desc()).all()  # If we want recent on top if not delete .order_by
+    user_bio = Bio.query.filter_by(user_id=user_id).first()  # Get the bio if it exists
+
+    if request.method == 'POST':
+        # Get the updated bio from the form
+        bio = request.form.get('bio', '')
+
+        if user_bio:
+            user_bio.bio = bio  # Update the bio if it already exists
+        else:
+            # Create a new bio if one does not exist
+            user_bio = Bio(user_id=user_id, bio=bio)
+            db.session.add(user_bio)
+
+        db.session.commit()
+        flash("Profile updated successfully.", "success")  # Flash message after update
+
+        return redirect(url_for('account_settings'))  # I tried to pop the alert but it only works when you go back to main page
+
+    return render_template('account_page.html', username=username, user_posts=user_posts, user_bio=user_bio)
+
+@app.route('/profile/<username>', methods=['GET'])
+def profile(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    user_posts = Posts.query.filter_by(poster_id=user.id).order_by(Posts.created_at.desc()).all()
+    user_bio = Bio.query.filter_by(user_id=user.id).first()
+
+    return render_template('profile_page.html', user=user, posts=user_posts, user_bio=user_bio)
+
 
 if __name__ == '__main__':
     with app.app_context():
