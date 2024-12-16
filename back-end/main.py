@@ -9,11 +9,13 @@ app = Flask(__name__)
 
 # SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
 #     username="sstafford4",
-#     password="Simperia1",
+#     password="FinalProj2024",
 #     hostname="sstafford4.mysql.pythonanywhere-services.com",
-#     databasename="sstafford4$default",
+#     databasename="sstafford4$final_project",
 # )
+
 SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:12263899@localhost/final_project'
+
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -212,11 +214,48 @@ def main_page():
         # Get a list of topic IDs that the user is following
         followed_topic_ids = [topic.id for topic in followed_topics]
 
+        recent_comments = (
+            db.session.query(
+                Comments.id.label('comment_id'),
+                Comments.content.label('comment_content'),
+                Comments.comment_username.label('commenter_username'),
+                Comments.created_at.label('comment_date'),
+                Posts.id.label('post_id'),
+                Posts.title.label('post_title'),
+                User.id.label('user_id'),
+                User.real_name.label('user_real_name'),
+                User.username.label('user_username')
+            )
+            .join(Posts, Comments.post_id == Posts.id)
+            .join(User, Comments.user_id == User.id)
+            .order_by(Comments.created_at.desc())
+            .limit(4)
+            .all()
+        )
+
+        # Convert recent comments to a JSON-friendly format for the template
+        recent_comments_list = [
+            {
+                'comment_id': comment.comment_id,
+                'comment_content': comment.comment_content,
+                'commenter_username': comment.commenter_username,
+                'comment_date': comment.comment_date,
+                'post_id': comment.post_id,
+                'post_title': comment.post_title,
+                'user_id': comment.user_id,
+                'user_real_name': comment.user_real_name,
+                'user_username': comment.user_username
+            }
+            for comment in recent_comments
+        ]
+
         return render_template('main_page.html',
                                all_topics=all_topics,
                                followed_topic_ids=followed_topic_ids,
                                posts=relevant_posts,
-                               username=username)
+                               username=username,
+                               recent_comments=recent_comments_list
+                               )
     else:
         flash("You need to log in first.")
         return redirect(url_for('login'))
@@ -233,11 +272,57 @@ def login():
             session['user_id'] = user.id
             session['username'] = user.username  # Store username in the session
 
-            all_topics = Topic.query.all()
-            relevant_posts = Posts.query.all()
+            # all_topics = Topic.query.all()
+            # relevant_posts = Posts.query.all()
 
-            flash("You cool, mf")
-            return render_template('main_page.html', all_topics=all_topics, user_id=user.id, username=user.username, posts=relevant_posts)
+            followed_topics = user.followed_topics
+            all_topics = Topic.query.all()
+
+            # Get the posts for the topics the user is following
+            # relevant_posts = Posts.query.filter(Posts.topic_id.in_([topic.id for topic in followed_topics])).all()
+            relevant_posts = Posts.query.filter(
+                Posts.topic_id.in_([topic.id for topic in followed_topics])
+            ).order_by(Posts.created_at.desc()).all()
+            # Get a list of topic IDs that the user is following
+            followed_topic_ids = [topic.id for topic in followed_topics]
+
+            recent_comments = (
+                db.session.query(
+                    Comments.id.label('comment_id'),
+                    Comments.content.label('comment_content'),
+                    Comments.comment_username.label('commenter_username'),
+                    Comments.created_at.label('comment_date'),
+                    Posts.id.label('post_id'),
+                    Posts.title.label('post_title'),
+                    User.id.label('user_id'),
+                    User.real_name.label('user_real_name'),
+                    User.username.label('user_username')
+                )
+                .join(Posts, Comments.post_id == Posts.id)
+                .join(User, Comments.user_id == User.id)
+                .order_by(Comments.created_at.desc())
+                .limit(4)
+                .all()
+            )
+
+            # Convert recent comments to a JSON-friendly format for the template
+            recent_comments_list = [
+                {
+                    'comment_id': comment.comment_id,
+                    'comment_content': comment.comment_content,
+                    'commenter_username': comment.commenter_username,
+                    'comment_date': comment.comment_date,
+                    'post_id': comment.post_id,
+                    'post_title': comment.post_title,
+                    'user_id': comment.user_id,
+                    'user_real_name': comment.user_real_name,
+                    'user_username': comment.user_username
+                }
+                for comment in recent_comments
+            ]
+
+            flash("Logged in!")
+            return render_template('main_page.html', all_topics=all_topics, user_id=user.id, username=user.username, posts=relevant_posts, followed_topic_ids=followed_topic_ids, recent_comments=recent_comments_list)
         else:
             flash("Invalid username or password")
             return redirect(url_for('index'))
@@ -327,7 +412,6 @@ def follow_topic(topic_id):
             # Add the topic to the user's followed topics
             user.followed_topics.append(topic)
             db.session.commit()
-            flash(f"You are now following the topic: {topic.name}")
 
         return redirect(url_for('main_page'))  # Redirect back to the main page
 
@@ -354,7 +438,6 @@ def unfollow_topic(topic_id):
             # Remove the topic from the user's followed topics
             user.followed_topics.remove(topic)
             db.session.commit()
-            flash(f"You have unfollowed the topic: {topic.name}")
         else:
             flash("You are not following this topic.")
 
@@ -394,6 +477,41 @@ def search_posts():
     # Get a list of topic IDs that the user is following
     followed_topic_ids = [topic.id for topic in followed_topics]
 
+    recent_comments = (
+        db.session.query(
+            Comments.id.label('comment_id'),
+            Comments.content.label('comment_content'),
+            Comments.comment_username.label('commenter_username'),
+            Comments.created_at.label('comment_date'),
+            Posts.id.label('post_id'),
+            Posts.title.label('post_title'),
+            User.id.label('user_id'),
+            User.real_name.label('user_real_name'),
+            User.username.label('user_username')
+        )
+        .join(Posts, Comments.post_id == Posts.id)
+        .join(User, Comments.user_id == User.id)
+        .order_by(Comments.created_at.desc())
+        .limit(4)
+        .all()
+    )
+
+    # Convert recent comments to a JSON-friendly format for the template
+    recent_comments_list = [
+        {
+            'comment_id': comment.comment_id,
+            'comment_content': comment.comment_content,
+            'commenter_username': comment.commenter_username,
+            'comment_date': comment.comment_date,
+            'post_id': comment.post_id,
+            'post_title': comment.post_title,
+            'user_id': comment.user_id,
+            'user_real_name': comment.user_real_name,
+            'user_username': comment.user_username
+        }
+        for comment in recent_comments
+    ]
+
     # Combine results and remove duplicates
     search_results = list({post.id: post for post in posts_by_topic + posts_by_user + posts_by_title}.values())
 
@@ -401,7 +519,7 @@ def search_posts():
     return render_template('main_page.html', search_results=search_results, query=query, all_topics=all_topics,
                                    followed_topic_ids=followed_topic_ids,
                                    posts=relevant_posts,
-                                   username=username)
+                                   username=username, recent_comments=recent_comments_list)
 
 
 @app.route('/submit_comment', methods=['POST'])
@@ -430,7 +548,6 @@ def submit_comment():
     try:
         db.session.add(comment)
         db.session.commit()
-        #flash("Comment submitted successfully!")
 
         # Redirect back to the post page to reload with the new comment
         return redirect(url_for('view_post', post_id=post_id))
@@ -513,9 +630,55 @@ def dislike_post(post_id):
         flash("You need to log in to dislike posts.")
         return redirect(url_for('login'))
 
+@app.route('/account_settings', methods=['GET', 'POST'])
+def account_settings():
+    if 'logged_in' in session:
+        user_id = session['user_id']
+        username = session.get('username')
+
+        your_posts = Posts.query.filter_by(poster_id=user_id).order_by(Posts.created_at.desc()).all()
+
+        return render_template('account_settings.html', posts=your_posts, username=username)
+
+@app.route('/view_profile/<int:poster_id>', methods=['GET', 'POST'])
+def view_profile(poster_id):
+    post_user = User.query.get(poster_id)
+    if post_user is None:
+        return "User not found", 404
+
+    all_user_posts = Posts.query.filter_by(poster_id=poster_id).all()
+
+    return render_template('view_profile.html', posts=all_user_posts, username=post_user.username)
+
+@app.route('/delete_post/<int:post_id>', methods=['DELETE', 'GET', 'POST'])
+def delete_post(post_id):
+    # Retrieve the post by its ID
+    post = Posts.query.get(post_id)
+
+    if not post:
+        # If the post does not exist, return a 404 error
+        flash("Post not found")
+
+    try:
+        # Delete related comments
+        Comments.query.filter_by(post_id=post_id).delete()
+
+        # Delete related likes
+        PostLikes.query.filter_by(post_id=post_id).delete()
+
+        # Delete the post itself
+        db.session.delete(post)
+        db.session.commit()
+
+        # Return a success message
+        return redirect(url_for('account_settings'))
+    except Exception as e:
+        # Rollback the session in case of any errors
+        db.session.rollback()
+        return redirect(url_for('account_settings'))
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
 
     app.run(debug=True)
-

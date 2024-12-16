@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Your Account</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script>
+            // Function to toggle visibility of the Create Account form
+            function toggleCreatePostForm() {
+                const form = document.getElementById("create-post-form");
+                form.style.display = form.style.display === "none" ? "block" : "none";
+            }
+        </script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='account_settings.css') }}">
+    </head>
+    <body>
+        <a href="/main_page">Return to Main Page</a>
+        <div>
+            <div>
+                <h2>{{ username }}'s Posts</h2>
+            </div>
+
+        <div>
+            {% if posts %}
+                {% for post in posts %}
+                    <div class="post">
+                        <h3>{{ post.poster_username }}: {{ post.title }}</h3>
+                        <p>{{ post.content }}</p>
+                        <small>Posted on: {{ post.created_at }}</small>
+
+                        <!-- View Post Button -->
+                        <a href="{{ url_for('view_post', post_id=post.id) }}">
+                            <button>View Post</button>
+                        </a>
+                    </div>
+                {% endfor %}
+            {% else %}
+            <p>You have no posts.</p>
+            {% endif %}
+        </div>
+    </body>
+</html>
