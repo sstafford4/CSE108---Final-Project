@@ -10,13 +10,24 @@
             const form = document.getElementById("create-post-form");
             form.style.display = form.style.display === "none" ? "block" : "none";
         }
+
+        function toggleTopics() {
+            const hiddenTopics = document.querySelectorAll('.hidden-topic');
+            const toggleButton = document.getElementById('toggle-topics');
+
+            hiddenTopics.forEach(topic => {
+                topic.style.display = topic.style.display === 'none' ? 'list-item' : 'none';
+            });
+
+            toggleButton.textContent = toggleButton.textContent === 'Show Less' ? 'View All' : 'Show Less';
+        }
     </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='main_page.css') }}">
 </head>
 <body>
     <div id="top-navigation">
         <a href="/logout">Log Out</a>
-        <a href="{{ url_for('account_settings') }}">Your Account</a>
+        <a href="/account_settings">Your Account</a>
     </div>
 
     <div id="search-bar">
@@ -45,20 +56,34 @@
         {% endif %}
     </div>
     <div id="popular-topics">
-        <h1>Popular Topics</h1>
-            <div>
-            <a href="{{ url_for('add_topic') }}">Add New Topic</a>
-            </div>
-
-        <ul>
-            {% for topic in all_topics %}
-                <li>
-                    {{ topic.name }}
+            <h1>Popular Topics</h1>
+            <ul>
+                {% for topic in all_topics %}
+                    <li class="{{ 'hidden-topic' if loop.index > 5 else '' }}">
+                        {{ topic.name }}
                         {% if topic.id in followed_topic_ids %}
                             <a href="{{ url_for('unfollow_topic', topic_id=topic.id) }}">-</a>
                         {% else %}
                             <a href="{{ url_for('follow_topic', topic_id=topic.id) }}">+</a>
                         {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+            {% if all_topics|length > 5 %}
+                <a href="#" id="toggle-topics" onclick="toggleTopics()">Show Less</a>
+            {% endif %}
+        </div>
+
+    <div id="what-people-are-saying">
+        <h1>What are people saying!</h1>
+        <ul>
+            {% for comment in recent_comments %}
+                <li>
+                    <small><strong>{{ comment.commenter_username }}</strong></small>:
+                        <a href="{{ url_for('view_post', post_id=comment.post_id) }}">
+                            <small>{{ comment.comment_content }}</small><br>
+                            <small>Posted on: {{ comment.comment_date }}</small>
+                        </a>
                 </li>
             {% endfor %}
         </ul>
@@ -78,7 +103,7 @@
                           placeholder="Title"
                           maxlength="50"
                           rows="2"
-                          style="width: 20%; resize: none"
+                          style="width: 80%; resize: none"
                           required
                 ></textarea>
             </div>
@@ -88,7 +113,7 @@
                     placeholder="What's on your mind?"
                     maxlength="500"
                     rows="5"
-                    style="width: 30%; resize: none;"
+                    style="width: 90%; resize: none;"
                     required
                 ></textarea>
             </div>
@@ -104,7 +129,13 @@
             {% if posts %}
             {% for post in posts %}
             <div class="post">
-                <h3>{{ post.poster_username }}: {{ post.title }}</h3>
+                <h3>
+                    {% if post.poster_username != username %}
+                    <a href="/view_profile/{{ post.poster_id }} ">{{ post.poster_username }}</a>: {{ post.title }}
+                    {% else %}
+                    <a href="/account_settings">{{ post.poster_username }}</a>: {{ post.title }}
+                    {% endif %}
+                </h3>
                 <p>{{ post.content }}</p>
                 <small>Posted on: {{ post.created_at }}</small>
 
@@ -129,5 +160,14 @@
         }
     </script>
 
+    <!-- Display any flash messages -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <script>
+                // Show the first flash message in a popup (the most recent one)
+                alert("{{ messages[0] }}");
+            </script>
+        {% endif %}
+    {% endwith %}
 </body>
 </html>
