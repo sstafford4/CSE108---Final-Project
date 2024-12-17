@@ -1,19 +1,20 @@
 /* General reset and styling */
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    color: #333;
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7fc;  /* Soft light gray background */
+    color: #333333;  /* Dark gray for text to ensure readability */
     line-height: 1.6;
 }
 
+/* Links */
 a {
     text-decoration: none;
-    color: #007BFF;
+    color: #3498db;  /* Soft blue for links */
 }
 
 a:hover {
-    color: #0056b3;
+    color: #2980b9;  /* Darker blue for hover */
 }
 
 /* Top navigation (logout and account settings) */
@@ -27,20 +28,23 @@ a:hover {
 
 #top-navigation a {
     font-weight: bold;
-    padding: 5px 10px;
+    padding: 10px 15px;
     border: 1px solid #ddd;
     border-radius: 5px;
-    background-color: #fff;
+    background-color: #ffffff;
+    color: #333333;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #top-navigation a:hover {
-    background-color: #f1f1f1;
+    background-color: #3498db;
+    color: #ffffff;  /* White text on hover */
 }
 
 /* Search bar */
 #search-bar {
     position: relative;
-    top: 10px;
+    top: 50px;
     left: 50%;
     transform: translateX(-50%);
     width: 50%;
@@ -65,39 +69,41 @@ a:hover {
     padding: 10px;
     border: 1px solid #ccc;
     border-left: none;
-    background-color: #007BFF;
+    background-color: #3498db;
     color: white;
     cursor: pointer;
     border-radius: 0 5px 5px 0;
+    transition: background-color 0.3s ease;
 }
 
 #search-bar button:hover {
-    background-color: #0056b3;
+    background-color: #2980b9;  /* Darker blue on hover */
 }
 
 /* Search Results */
 #search-results {
     position: relative;
-    top: 50px; /* Adjust this to ensure proper spacing */
+    top: 70px;  /* Adjusted for spacing */
     margin: 10px auto;
-    width: 40%; /* Matches the width of the search bar */
+    width: 40%;
     text-align: center;
     font-size: 16px;
     color: #777;
-    background-color: #f8f8f8;
+    background-color: #ffffff;
     border: 1px solid #ddd;
     border-radius: 5px;
     padding: 10px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    list-style-type: none; /* Remove bullet points from list */
+    list-style-type: none;  /* Remove bullet points from list */
 }
+
 /* Popular Topics */
 #popular-topics {
     position: fixed;
     top: 80px;
     left: 10px;
     width: 200px;
-    background-color: #fff;
+    background-color: #ffffff;
     border: 1px solid #ddd;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -110,7 +116,7 @@ a:hover {
     top: 400px;
     left: 10px;
     width: 200px;
-    background-color: #fff;
+    background-color: #ffffff;
     border: 1px solid #ddd;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -122,85 +128,68 @@ a:hover {
     margin-bottom: 10px;
     color: #333;
 }
+
 #what-people-are-saying h1 {
     font-size: 14px;
     margin-bottom: 10px;
     color: #333;
 }
 
-#popular-topics ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
+#popular-topics ul,
 #what-people-are-saying ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-#popular-topics li {
-    margin-bottom: 10px;
-    font-size: 14px;
-}
+#popular-topics li,
 #what-people-are-saying li {
     margin-bottom: 10px;
     font-size: 14px;
 }
 
-#popular-topics a {
-    color: #007BFF;
+#popular-topics a,
+#what-people-are-saying a {
+    color: #3498db;  /* Soft blue for links */
     font-weight: bold;
 }
 
-#popular-topics a:hover {
-    text-decoration: underline;
-}
-
-#what-people-are-saying a {
-    text-align: left;
-}
-
+#popular-topics a:hover,
 #what-people-are-saying a:hover {
     text-decoration: underline;
 }
 
+/* Comment Button Styling */
 .comment-button {
-    background-color: #f5f5f5; /* Light gray background */
-    border: 1px solid #ddd; /* Subtle border */
-    border-radius: 8px; /* Rounded corners */
-    padding: 12px 16px; /* Spacing inside the button */
-    margin: 8px 0; /* Space between buttons */
-    text-align: left; /* Align text to the left */
-    width: 100%; /* Make the button full width */
-    cursor: pointer; /* Show pointer cursor on hover */
-    font-size: 14px; /* Adjust font size */
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Light shadow for depth */
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
     transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.comment-button small {
-    display: block; /* Ensure spacing for each line */
-    line-height: 1.4; /* Adjust line height */
-}
-
 .comment-button:hover {
-    background-color: #e6e6e6; /* Slightly darker gray on hover */
-    box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.15); /* Enhance shadow on hover */
+    background-color: #e6e6e6;
+    box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .comment-button:active {
-    background-color: #dcdcdc; /* Even darker gray on click */
-    box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.2); /* Inner shadow for click effect */
+    background-color: #dcdcdc;
+    box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* User Feed */
 #user-feed {
     position: relative;
     max-width: 800px;
-    margin: 50px auto 50px auto;
-    background-color: #fff;
+    margin: 50px auto;
+    background-color: #ffffff;
     border: 1px solid #ddd;
     border-radius: 10px;
     padding: 20px;
@@ -237,7 +226,7 @@ a:hover {
 
 #user-feed .post button {
     padding: 5px 10px;
-    background-color: #007BFF;
+    background-color: #3498db;
     color: white;
     border: none;
     border-radius: 5px;
@@ -245,7 +234,7 @@ a:hover {
 }
 
 #user-feed .post button:hover {
-    background-color: #0056b3;
+    background-color: #2980b9;
 }
 
 /* Center the "Create Post" button */
@@ -256,29 +245,29 @@ button[onclick="toggleCreatePostForm()"] {
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
-    background-color: #007bff;
+    background-color: #3498db;
     color: white;
     cursor: pointer;
     transition: background-color 0.3s;
 }
 
 button[onclick="toggleCreatePostForm()"]:hover {
-    background-color: #0056b3;
+    background-color: #2980b9;
 }
 
 /* Adjust Create Post Form */
 #create-post-form {
-    background-color: #fff;
+    background-color: #ffffff;
     border: 1px solid #ddd;
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-top: 50px; /* Increased to move the form further down */
+    margin-top: 50px;
     max-width: 500px;
     margin-left: auto;
     margin-right: auto;
     display: block;
-    text-align: center; /* Ensures form elements are well-aligned */
+    text-align: center;
 }
 
 #create-post-form textarea {
@@ -291,7 +280,7 @@ button[onclick="toggleCreatePostForm()"]:hover {
 
 #create-post-form button {
     padding: 10px 15px;
-    background-color: #007BFF;
+    background-color: #3498db;
     color: white;
     border: none;
     border-radius: 5px;
@@ -299,7 +288,7 @@ button[onclick="toggleCreatePostForm()"]:hover {
 }
 
 #create-post-form button:hover {
-    background-color: #0056b3;
+    background-color: #2980b9;
 }
 
 .hidden-topic {

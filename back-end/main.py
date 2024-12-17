@@ -447,6 +447,7 @@ def unfollow_topic(topic_id):
         flash("You need to log in first.")
         return redirect(url_for('login'))
 
+
 @app.route('/search_posts', methods=['GET'])
 def search_posts():
     user_id = session.get('user_id')
@@ -636,9 +637,20 @@ def account_settings():
         user_id = session['user_id']
         username = session.get('username')
 
+        # Fetch the posts made by the user
         your_posts = Posts.query.filter_by(poster_id=user_id).order_by(Posts.created_at.desc()).all()
 
-        return render_template('account_settings.html', posts=your_posts, username=username)
+        # Fetch the topics the user is following
+        user = User.query.get(user_id)
+        followed_topics = user.followed_topics  # The topics the user is following
+
+        # Render the account settings page, passing the posts and followed topics
+        return render_template('account_settings.html', posts=your_posts, username=username, followed_topics=followed_topics)
+
+    else:
+        flash("You need to log in first.")
+        return redirect(url_for('login'))
+
 
 @app.route('/view_profile/<int:poster_id>', methods=['GET', 'POST'])
 def view_profile(poster_id):

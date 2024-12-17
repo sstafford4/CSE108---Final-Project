@@ -1,19 +1,135 @@
 /* General reset and styling */
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    color: #333;
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7fc;  /* Soft light background */
+    color: #333333;  /* Dark gray for text */
     line-height: 1.6;
 }
 
+/* Links */
 a {
     text-decoration: none;
-    color: #007BFF;
+    color: #3498db;  /* Soft blue for links */
 }
 
 a:hover {
-    color: #0056b3;
+    color: #2980b9;  /* Darker blue on hover */
+}
+
+/* Create Post Form */
+#create-post-form {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-top: 50px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    text-align: center;  /* Ensures form elements are well-aligned */
+}
+
+#create-post-form textarea {
+    width: 90%;  /* Make it responsive */
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    resize: vertical;  /* Allow vertical resizing only */
+}
+
+#create-post-form button {
+    padding: 10px 15px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#create-post-form button:hover {
+    background-color: #2980b9;  /* Darker blue on hover */
+}
+
+/* For "Create Post" Button */
+button[onclick="toggleCreatePostForm()"] {
+    display: inline-block;
+    margin: 0 auto;
+    font-size: 16px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #3498db;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button[onclick="toggleCreatePostForm()"]:hover {
+    background-color: #2980b9;
+}
+
+/* Styling for Account Details Section */
+h1 {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 24px;
+    color: #333;  /* Black color for the main title */
+}
+
+h2 {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: #333333;
+}
+
+/* Displaying Posts Section */
+.post {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 20px auto;
+    max-width: 600px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.post h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;  /* Change post title color to black */
+}
+
+.post p {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #555;  /* Darker gray for post content */
+}
+
+.post small {
+    font-size: 12px;
+    color: #777;  /* Light gray for post date */
+}
+
+.post button {
+    padding: 5px 10px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.post button:hover {
+    background-color: #2980b9;  /* Darker blue on hover */
 }
 
 /* Return to Main Page link */
@@ -26,117 +142,65 @@ body > a {
     border: 1px solid #ddd;
     border-radius: 5px;
     background-color: #fff;
+    color: #333333;
+    transition: background-color 0.3s ease;
 }
 
 body > a:hover {
-    background-color: #f1f1f1;
+    background-color: #2980b9;  /* Change to the same hover color as the main page button */
+    color: white;  /* Change text color to white for contrast */
 }
 
-/* Center the "Create Post" button */
-button[onclick="toggleCreatePostForm()"] {
-    display: inline-block;
-    margin: 0 auto;
-    font-size: 16px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
 
-button[onclick="toggleCreatePostForm()"]:hover {
-    background-color: #0056b3;
-}
+/* Adjust Create Post Form for Responsiveness */
+@media (max-width: 768px) {
+    #create-post-form {
+        width: 90%;
+    }
 
-/* Adjust Create Post Form */
-#create-post-form {
-    background-color: #fff;
+    .post {
+        width: 90%;
+    }
+}
+/* Sidebar for Topics the User Follows */
+#followed-topics-sidebar {
+    position: fixed;
+    top: 80px;
+    left: 10px;
+    width: 250px;
+    background-color: #ffffff;
     border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 20px;
+    border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-top: 50px;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-    display: none; /* Initially hidden */
-    text-align: center; /* Ensures form elements are well-aligned */
+    padding: 15px;
+    z-index: 1000;  /* Ensures it's on top */
 }
 
-#create-post-form input, #create-post-form textarea {
-    width: 90%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-#create-post-form button {
-    padding: 10px 15px;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-#create-post-form button:hover {
-    background-color: #0056b3;
-}
-
-/* Styling for Your Posts */
-h1 {
-    text-align: center;
-    margin-top: 40px;
-    font-size: 24px;
+#followed-topics-sidebar h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
     color: #333;
 }
-p {
-    text-align: center;
+
+#followed-topics-sidebar ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
 }
 
-h2 {
-    text-align: center;
-}
-
-.post {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 15px;
-    margin: 20px auto;
-    max-width: 600px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.post h3 {
-    font-size: 18px;
-    margin-bottom: 10px;
-    color: #007BFF;
-}
-
-.post p {
+#followed-topics-sidebar ul li {
     font-size: 16px;
     margin-bottom: 10px;
 }
 
-.post small {
-    font-size: 12px;
-    color: #777;
+#followed-topics-sidebar ul li a {
+    color: #007BFF;
+    text-decoration: none;
+    font-weight: bold;
 }
 
-.post button {
-    padding: 5px 10px;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
+#followed-topics-sidebar ul li a:hover {
+    text-decoration: underline;
 }
 
-.post button:hover {
-    background-color: #0056b3;
-}
+
